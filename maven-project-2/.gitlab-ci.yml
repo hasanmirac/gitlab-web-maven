@@ -1,0 +1,47 @@
+## YAML Template.
+---
+image: maven:3-jdk-8
+
+variables:
+  MAVEN_OPTS: "-Djava.awt.headless=true -Dmaven.repo.local=./.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+
+cache:
+  paths:
+    - ./.m2/repository
+    
+  key: "$CI_BUILD_REF_NAME"
+
+stages:
+  - build
+  - deploy
+
+build-job:
+  stage: build
+  script:
+    - "mvn clean package $MAVEN_CLI_OPTS"
+    - pwd
+  artifacts:
+    paths:
+      - target/
+
+
+deploy-job:
+  stage: deploy
+  
+  variables:
+      KUBE_CONFIG2: /home/gitlab-runner/admin.conf
+  
+  script:
+      - ps
+      - which kubectl
+      - echo Daha yok ${CI_COMMIT_SHA} 
+      - echo kube ${KUBECONFIG}
+      - echo Daha yok ${CI_COMMIT_SHORT_SHA}
+      - echo image ${CI_JOB_IMAGE}
+      - docker build -t 192.168.122.179:5000/web-maven:${CI_COMMIT_SHORT_SHA} .
+      - docker push 192.168.122.179:5000/web-maven:${CI_COMMIT_SHORT_SHA}
+      - sed s/CI_COMMIT_SHORT_SHA/${CI_COMMIT_SHORT_SHA}/<deployment.yml>asildeployment.yml
+      - cat asildeployment.yml
+      - chmod +x kube.sh
+      - sudo kubectl apply -f asildeployment.yml            

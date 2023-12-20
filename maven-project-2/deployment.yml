@@ -1,0 +1,21 @@
+## YAML Template.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-maven-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-maven
+  template:
+    metadata:
+      labels:
+        app: web-maven
+    spec:
+      containers:
+        - name: web-maven
+          image: 192.168.122.179:5000/web-maven:CI_COMMIT_SHORT_SHA
+          ports:
+            - containerPort: 8080
